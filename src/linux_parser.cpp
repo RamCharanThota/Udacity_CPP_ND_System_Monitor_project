@@ -68,29 +68,160 @@ vector<int> LinuxParser::Pids() {
 }
 
 // TODO: Read and return the system memory utilization
-float LinuxParser::MemoryUtilization() { return 0.0; }
+float LinuxParser::MemoryUtilization() { 
+  string line,key;
+  float value;
+  float mem_utilization=0,mem_total=0,mem_free=0;
+  std::ifstream stream(kProcDirectory + kMeminfoFilename);
+  if(stream.is_open()){
+       while (std::getline(stream, line)) {
+      std::istringstream linestream(line);
+      while (linestream >> key >> value) {
+        if (key == "MemTotal") {
+          mem_total=value;
+        }else if(key == "MemFree"){
+          mem_free=value;
+
+        }
+      }
+      mem_utilization=(mem_total-mem_free)/mem_total;
+    }
+  }
+  
+  return mem_utilization; 
+ }
 
 // TODO: Read and return the system uptime
-long LinuxParser::UpTime() { return 0; }
+long LinuxParser::UpTime() {
+  long up_time,idle_time;
+  string line;
+  std::ifstream stream(kProcDirectory+kUptimeFilename);
+  if(stream.is_open()){
+    while(std::getline(stream,line)){
+     std::istringstream linestream(line);
+     linestream >> up_time >> idle_time;
+
+    }
+
+  }
+  return up_time; 
+}
 
 // TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
+long LinuxParser::Jiffies() { 
+  long sys_uptime=LinuxParser::UpTime();
+  long sys_frequency=  sysconf(_SC_CLK_TCK);
+  long total_jiffies= sys_uptime*sys_frequency;
+  return total_jiffies;
+ }
 
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { return 0; }
+long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { 
+  string line;
+   long active_jiff_sum=0;
+    long value_from_linestream=0;
+  std::ifstream stream(kProcDirectory+std::to_string(pid)+kStatFilename);
+  if(stream.is_open()){
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    int index=0;
+   
+    while(linestream){
+      linestream>>value_from_linestream;
+      if(index==13||index==16){
+        active_jiff_sum=active_jiff_sum+value_from_linestream;
+      }
+
+      ++index;
+    }
+   
+  }
+
+
+  return active_jiff_sum; 
+ }
 
 // TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
+long LinuxParser::ActiveJiffies() { 
+  string line;
+   long active_jiff_sum=0;
+    long value_from_linestream=0;
+  std::ifstream stream(kProcDirectory+std::to_string(pid)+kStatFilename);
+  if(stream.is_open()){
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    int index=0;
+   
+    while(linestream){
+      linestream>>value_from_linestream;
+      if(index==13||index==16){
+        active_jiff_sum=active_jiff_sum+value_from_linestream;
+      }
+
+      ++index;
+    }
+   
+  }
+
+
+  return active_jiff_sum; 
+ }
 
 // TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { return 0; }
+long LinuxParser::IdleJiffies() { 
+  string line;
+   long active_jiff_sum=0;
+    long value_from_linestream=0;
+  std::ifstream stream(kProcDirectory+std::to_string(pid)+kStatFilename);
+  if(stream.is_open()){
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    int index=0;
+   
+    while(linestream){
+      linestream>>value_from_linestream;
+      if(index==13||index==16){
+        active_jiff_sum=active_jiff_sum+value_from_linestream;
+      }
+
+      ++index;
+    }
+   
+  }
+
+
+  return active_jiff_sum; 
+ }
 
 // TODO: Read and return CPU utilization
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 
 // TODO: Read and return the total number of processes
-int LinuxParser::TotalProcesses() { return 0; }
+int LinuxParser::TotalProcesses() { 
+  string line;
+   long active_jiff_sum=0;
+    long value_from_linestream=0;
+  std::ifstream stream(kProcDirectory+std::to_string(pid)+kStatFilename);
+  if(stream.is_open()){
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    int index=0;
+   
+    while(linestream){
+      linestream>>value_from_linestream;
+      if(index==13||index==16){
+        active_jiff_sum=active_jiff_sum+value_from_linestream;
+      }
+
+      ++index;
+    }
+   
+  }
+
+
+  return active_jiff_sum; 
+}
 
 // TODO: Read and return the number of running processes
 int LinuxParser::RunningProcesses() { return 0; }
