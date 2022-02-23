@@ -194,7 +194,7 @@ int LinuxParser::TotalProcesses() {
   int total_process = 0;
   std::string total_proc;
   string name = 0;
-  //int index = 0;
+  // int index = 0;
   std::ifstream stream(kProcDirectory + kStatFilename);
   if (stream.is_open()) {
     while (std::getline(stream, line)) {
@@ -230,62 +230,78 @@ int LinuxParser::RunningProcesses() {
         }
       }
     }
-
   }
-    return running_process;
-
+  return running_process;
 }
 
-  // TODO: Read and return the command associated with a process
-  // REMOVE: [[maybe_unused]] once you define the function
-  string LinuxParser::Command(int pid ) { 
-    string line;
-    string file_path=kProcDirectory+to_string(pid)+kCmdlineFilename;
-    std::ifstream stream(file_path);
-    if(stream.is_open()){
-      std::getline(stream, line);
-    }
+// TODO: Read and return the command associated with a process
+// REMOVE: [[maybe_unused]] once you define the function
+string LinuxParser::Command(int pid) {
+  string line;
+  string file_path = kProcDirectory + to_string(pid) + kCmdlineFilename;
+  std::ifstream stream(file_path);
+  if (stream.is_open()) {
+    std::getline(stream, line);
+  }
 
-    return line;
-     }
+  return line;
+}
 
-  // TODO: Read and return the memory used by a process
-  // REMOVE: [[maybe_unused]] once you define the function
-  string LinuxParser::Ram(int pid [[maybe_unused]]) { return string(); }
+// TODO: Read and return the memory used by a process
+// REMOVE: [[maybe_unused]] once you define the function
+string LinuxParser::Ram(int pid [[maybe_unused]]) { return string(); }
 
-  // TODO: Read and return the user ID associated with a process
-  // REMOVE: [[maybe_unused]] once you define the function
-  string LinuxParser::Uid(int pid ) { 
-    string line,key,val1;
-    string uid;
-    string file_path=kProcDirectory+to_string(pid)+kStatusFilename;
-    std::ifstream stream(file_path);
-    if(stream.is_open()){
-      while (std::getline(stream, line))
-      {
-        std::istringstream linestream(line);
-        if(linestream){
-          linestream>>key>>val1;
-          if (key=="uid"){
-          uid=val1;
+// TODO: Read and return the user ID associated with a process
+// REMOVE: [[maybe_unused]] once you define the function
+string LinuxParser::Uid(int pid) {
+  string line, key, val1;
+  string uid;
+  string file_path = kProcDirectory + to_string(pid) + kStatusFilename;
+  std::ifstream stream(file_path);
+  if (stream.is_open()) {
+    while (std::getline(stream, line)) {
+      std::istringstream linestream(line);
+      if (linestream) {
+        linestream >> key >> val1;
+        if (key == "uid") {
+          uid = val1;
           break;
-
-          }
         }
       }
-      
     }
+  }
 
-    
-    
-    return uid;
-    
-   }
+  return uid;
+}
 
-  // TODO: Read and return the user associated with a process
-  // REMOVE: [[maybe_unused]] once you define the function
-  string LinuxParser::User(int pid [[maybe_unused]]) { return string(); }
+// TODO: Read and return the user associated with a process
+// REMOVE: [[maybe_unused]] once you define the function
+string LinuxParser::User(int pid) {
+  string line = NULL;
+  string file_path = "/etc/passwd";
+  std::ifstream stream(file_path);
+  string word = NULL;
+  string user_name = NULL;
+  if (stream.is_open()) {
+    while (std::getline(stream, line)) {
+      std::istringstream ss(line);
+      std::string token;
+      bool read_user_name = false;
 
-  // TODO: Read and return the uptime of a process
-  // REMOVE: [[maybe_unused]] once you define the function
-  long LinuxParser::UpTime(int pid [[maybe_unused]]) { return 0; }
+      while (std::getline(ss, token, ':')) {
+        if (!read_user_name) {
+          user_name = token;
+          read_user_name = true;
+        }
+        if (token == to_string(pid)) {
+          return user_name;
+        }
+      }
+    }
+  }
+  return user_name;
+}
+
+// TODO: Read and return the uptime of a process
+// REMOVE: [[maybe_unused]] once you define the function
+long LinuxParser::UpTime(int pid [[maybe_unused]]) { return 0; }
