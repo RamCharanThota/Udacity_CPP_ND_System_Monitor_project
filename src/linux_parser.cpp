@@ -6,11 +6,15 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <bits/stdc++.h>
+
+
 
 using std::stof;
 using std::string;
 using std::to_string;
 using std::vector;
+
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
@@ -304,4 +308,32 @@ string LinuxParser::User(int pid) {
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::UpTime(int pid [[maybe_unused]]) { return 0; }
+long LinuxParser::UpTime(int pid ) { 
+  string line;
+  string file_path = kProcDirectory+to_string(pid)+kStatFilename;
+  std::ifstream stream(file_path);
+  string up_time=NULL;
+  long up_time_long=0;
+  if (stream.is_open())
+  {
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    int index = 0;
+
+    while (linestream) {
+      linestream >> up_time;
+      if (index == 21) {
+        up_time_long=stol(up_time);
+
+        return  up_time_long;
+      }
+
+      ++index;
+    }
+    
+  }
+  
+  
+  return up_time_long; 
+  
+  }
