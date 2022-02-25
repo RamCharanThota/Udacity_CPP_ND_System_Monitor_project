@@ -1,20 +1,17 @@
 #include "linux_parser.h"
 
+#include <bits/stdc++.h>
 #include <dirent.h>
 #include <unistd.h>
 
 #include <sstream>
 #include <string>
 #include <vector>
-#include <bits/stdc++.h>
-
-
 
 using std::stof;
 using std::string;
 using std::to_string;
 using std::vector;
-
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
@@ -253,7 +250,29 @@ string LinuxParser::Command(int pid) {
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Ram(int pid [[maybe_unused]]) { return string(); }
+string LinuxParser::Ram(int pid) {
+  long kb_to_mb=0.0009765625; // 1kb is equal to 0.0009765625 mb
+  string line, key, val1;
+  string memory_used = NULL;
+  string file_path = kProcDirectory + to_string(pid) + kStatusFilename;
+  std::ifstream stream(file_path);
+  if (stream.is_open()) {
+    while (std::getline(stream, line)) {
+      std::istringstream linestream(line);
+      if (linestream) {
+        linestream >> key >> val1;
+        if (key == "VmSize:") {
+          memory_used = val1;
+          break;
+        }
+      }
+    }
+  }
+
+  memory_used=to_string(stol(memory_used)*0.0009765625);
+
+  return memory_used;
+}
 
 // TODO: Read and return the user ID associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
@@ -308,14 +327,14 @@ string LinuxParser::User(int pid) {
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::UpTime(int pid ) { 
+long LinuxParser::UpTime(int pid) {
   string line;
-  string file_path = kProcDirectory+to_string(pid)+kStatFilename;
+  string file_path = kProcDirectory + to_string(pid) + kStatFilename;
   std::ifstream stream(file_path);
-  string up_time=NULL;
-  long up_time_long=0;
-  if (stream.is_open())
-  {
+  string up_time = NULL;
+  long up_time_long = 0;
+  long up_time_in_sec = 0;
+  if (stream.is_open()) {
     std::getline(stream, line);
     std::istringstream linestream(line);
     int index = 0;
@@ -323,17 +342,15 @@ long LinuxParser::UpTime(int pid ) {
     while (linestream) {
       linestream >> up_time;
       if (index == 21) {
-        up_time_long=stol(up_time);
+        up_time_long = stol(up_time);
+        up_time_in_sec = up_time_long / sysconf(_SC_CLK_TCK);
 
-        return  up_time_long;
+        return up_time_in_sec;
       }
 
       ++index;
     }
-    
   }
-  
-  
-  return up_time_long; 
-  
-  }
+
+  return up_time_in_sec;
+}
