@@ -187,7 +187,62 @@ long LinuxParser::IdleJiffies() {
 }
 
 // TODO: Read and return CPU utilization
-vector<string> LinuxParser::CpuUtilization() { return {}; }
+vector<string> LinuxParser::CpuUtilization() {
+  long uptime_of_system = LinuxParser::UpTime();
+  vector<int> processes_pid_list = LinuxParser::Pids();
+  vector<string> cpu_util_list;
+  std::ifstream stream;
+  for (int process_pid : processes_pid_list) {
+    string line;
+    string file_path = kProcDirectory +to_string(process_pid) + kStatFilename;
+    stream.open(file_path);
+    string token;
+    long token_long = 0;
+    long utime=0;
+    long stime=0;
+    long cutime=0;
+    long cstime=0;
+    long starttime=0;
+    int clc_tck=sysconf(_SC_CLK_TCK);
+    if (stream.is_open()) {
+      std::getline(stream, line);
+      std::istringstream linestream(line);
+      int index = 0;
+
+      while (linestream) {
+        linestream >> token;
+          if(index==13){
+           utime=stol(token);
+          }
+
+          if(index==14){
+           stime=stol(token);
+          }
+
+          if(index==15){
+           cutime=stol(token);
+          }
+
+          if(index==16){
+           cstime=stol(token);
+          }
+
+          if(index==21){
+           starttime=stol(token);
+           break;
+          }
+
+        ++index;
+      }
+      long total_time=utime+stime+cutime+cstime;
+      long total_elapsed_time=uptime_of_system-(starttime/clc_tck);
+      long cpu_usage=100*((total_time/clc_tck)/total_elapsed_time);
+      cpu_util_list.push_back(to_string(cpu_usage));
+    }
+  }
+  stream.close();
+  return cpu_util_list;
+}
 
 // TODO: Read and return the total number of processes
 int LinuxParser::TotalProcesses() {
@@ -202,7 +257,7 @@ int LinuxParser::TotalProcesses() {
       std::istringstream linestream(line);
       if (linestream) {
         linestream >> name >> total_proc;
-        if (name == "processes") {
+        if (name == "processes:") {
           total_process = std::stoi(total_proc);
         }
       }
@@ -251,7 +306,7 @@ string LinuxParser::Command(int pid) {
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Ram(int pid) {
-  long kb_to_mb=0.0009765625; // 1kb is equal to 0.0009765625 mb
+  long kb_to_mb = 0.0009765625;  // 1kb is equal to 0.0009765625 mb
   string line, key, val1;
   string memory_used = NULL;
   string file_path = kProcDirectory + to_string(pid) + kStatusFilename;
@@ -269,7 +324,7 @@ string LinuxParser::Ram(int pid) {
     }
   }
 
-  memory_used=to_string(stol(memory_used)*0.0009765625);
+  memory_used = to_string(stol(memory_used) * 0.0009765625);
 
   return memory_used;
 }
